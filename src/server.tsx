@@ -3,9 +3,14 @@ import { serializeNode, type OpaqueSerializedElementShape } from "./serde2";
 
 export class ComponentDispatcher extends RpcTarget {
   #registry: RpcComponentRegistry<ServerComponents>;
-  constructor(registry: RpcComponentRegistry<ServerComponents>) {
+  #platform: string;
+  constructor(
+    registry: RpcComponentRegistry<ServerComponents>,
+    platform: string
+  ) {
     super();
     this.#registry = registry;
+    this.#platform = platform;
   }
 
   async render(
@@ -21,7 +26,7 @@ export class ComponentDispatcher extends RpcTarget {
       throw new Error(`Component ${name} not found`);
     }
 
-    const element = await component(props);
+    const element = await component({ ...props, platform: this.#platform });
     const renderedCallback = (
       asyncComponentRenderedCallback as RpcStub<
         typeof asyncComponentRenderedCallback
@@ -80,7 +85,11 @@ export async function jsxrpcMiddleware<
     if (request.method === "OPTIONS") {
       return new Response("OK", { headers: corsHeaders });
     }
-    return newWorkersRpcResponse(request, new ComponentDispatcher(registry));
+    const platform = url.searchParams.get("platform") ?? "web";
+    return newWorkersRpcResponse(
+      request,
+      new ComponentDispatcher(registry, platform)
+    );
   }
 
   return await next?.(request);

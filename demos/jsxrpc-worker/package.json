@@ -13,7 +13,7 @@
   },
   "dependencies": {
     "capnweb": "^0.1.0",
-    "jsxrpc": "link:../..",
+    "jsxrpc": "file:../..",
     "react": "^19.1.1",
     "react-dom": "^19.1.1"
   },

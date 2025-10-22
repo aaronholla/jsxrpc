@@ -87,11 +87,14 @@ function proxyFor<T extends RpcStub<ComponentDispatcher>>(
 
 export function useRpcComponents<
   T extends RpcComponentRegistry<ServerComponents>
->(): T["components"] {
+>(wsUrl?: string): T["components"] {
   const stubRef = React.useRef(
     newWebSocketRpcSession<ComponentDispatcher>(
       // @ts-ignore
-      new URL("/rpc", window.location.origin).toString()
+      new URL(
+        `/rpc?platform=${process.env.EXPO_OS ?? "web"}`,
+        wsUrl ?? window.location.origin
+      ).toString()
     )
   );
   return proxyFor(stubRef.current);
