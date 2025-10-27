@@ -1,11 +1,13 @@
 import React from "react";
 import { newWebSocketRpcSession, type RpcStub } from "capnweb";
+import type { ComponentType } from "react";
 import type {
   ComponentDispatcher,
   RpcComponentRegistry,
   ServerComponents,
 } from "./server";
 import { deserializeNode, type OpaqueSerializedElementShape } from "./serde2";
+import createCSSStyleSheet from "./dom/createCSSStyleSheet";
 
 const neverResolves = new Promise<never>(() => {});
 
@@ -37,7 +39,8 @@ function cachedPromise<Value>(
 }
 
 function proxyFor<T extends RpcStub<ComponentDispatcher>>(
-  dispatcher: T | null
+  dispatcher: T | null,
+  clientComponentMap: Record<string, AnyComponent>
 ): Record<string, (props: object) => Promise<any>> {
   // @ts-ignore
   return new Proxy(
@@ -50,22 +53,23 @@ function proxyFor<T extends RpcStub<ComponentDispatcher>>(
             return null;
           }
 
-          const promise = cachedPromise(prop as string, () => {
-            const map = new Map<
+          const promise = cachedPromise(prop as string, async () => {
+            const serverComponentMap = new Map<
               string,
               | OpaqueSerializedElementShape
               | ((element: OpaqueSerializedElementShape) => void)
             >();
 
-            // @ts-ignore
-            const x: Promise<any> = dispatcher.render(
+            const styles = dispatcher.styles();
+
+            const render = dispatcher.render(
               prop as string,
               props,
               (id, element) => {
                 console.log(`Received ${id} as ${JSON.stringify(element)}`);
-                const existing = map.get(id);
+                const existing = serverComponentMap.get(id);
                 if (!existing) {
-                  map.set(id, element);
+                  serverComponentMap.set(id, element);
                 } else if (typeof existing === "function") {
                   existing(element);
                 } else {
@@ -73,9 +77,25 @@ function proxyFor<T extends RpcStub<ComponentDispatcher>>(
                 }
               }
             );
-            return x.then((serializedElem) => {
-              return deserializeNode(serializedElem, map);
-            });
+
+            // @ts-ignore
+            const [css, serializedElem] = await Promise.all([styles, render]);
+
+            if (css) {
+              console.log(`Received styles ${JSON.stringify(css)}`);
+              if (process.env.EXPO_OS === "web") {
+                createCSSStyleSheet("jsxrpc", css);
+              } else {
+                // @ts-ignore
+                globalThis.__react_native_css_style_collection?.inject(css);
+              }
+            }
+
+            return deserializeNode(
+              serializedElem,
+              serverComponentMap,
+              clientComponentMap
+            );
           });
 
           return <Wrapper childrenPromise={promise} />;
@@ -85,9 +105,11 @@ function proxyFor<T extends RpcStub<ComponentDispatcher>>(
   );
 }
 
+export type AnyComponent = ComponentType<any>;
+
 export function useRpcComponents<
   T extends RpcComponentRegistry<ServerComponents>
->(wsUrl?: string): T["components"] {
+>(componentMap: Record<string, AnyComponent>, wsUrl?: string): T["components"] {
   const stubRef = React.useRef(
     newWebSocketRpcSession<ComponentDispatcher>(
       // @ts-ignore
@@ -97,5 +119,17 @@ export function useRpcComponents<
       ).toString()
     )
   );
-  return proxyFor(stubRef.current);
+  return proxyFor(stubRef.current, componentMap);
+}
+
+/**
+ * Creates a register of client components that can be used when deserializing server components.
+ *
+ * @param components - The components to register.
+ * @returns A registry of the registered components.
+ */
+export function registerClientComponents<T extends ServerComponents>(
+  components: T
+): RpcComponentRegistry<T> {
+  return { components };
 }

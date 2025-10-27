@@ -4,13 +4,30 @@ import { serializeNode, type OpaqueSerializedElementShape } from "./serde2";
 export class ComponentDispatcher extends RpcTarget {
   #registry: RpcComponentRegistry<ServerComponents>;
   #platform: string;
+  #styles: { native: any; web: string } | undefined;
+
   constructor(
     registry: RpcComponentRegistry<ServerComponents>,
-    platform: string
+    platform: string,
+    styles: { native: any; web: string } | undefined
   ) {
     super();
     this.#registry = registry;
     this.#platform = platform;
+    this.#styles = styles;
+  }
+
+  async styles() {
+    try {
+      if (this.#platform === "web") {
+        return this.#styles?.web;
+      } else {
+        return this.#styles?.native;
+      }
+    } catch (error) {
+      console.error(error);
+      throw error;
+    }
   }
 
   async render(
@@ -20,7 +37,7 @@ export class ComponentDispatcher extends RpcTarget {
       id: string,
       element: OpaqueSerializedElementShape
     ) => void
-  ): Promise<any> {
+  ) {
     const component = this.#registry.components[name];
     if (!component) {
       throw new Error(`Component ${name} not found`);
@@ -32,7 +49,7 @@ export class ComponentDispatcher extends RpcTarget {
         typeof asyncComponentRenderedCallback
       >
     ).dup();
-    return serializeNode(element, renderedCallback) as unknown as Promise<any>;
+    return serializeNode(element, renderedCallback);
   }
 }
 
@@ -56,11 +73,16 @@ export function registerRpcComponents<T extends ServerComponents>(
 
 export function jsxrpcMiddleware<
   T extends RpcComponentRegistry<ServerComponents>
->(registry: T, request: Request): Promise<Response | undefined>;
+>(
+  registry: T,
+  styles: { native: any; web: string } | undefined,
+  request: Request
+): Promise<Response | undefined>;
 export function jsxrpcMiddleware<
   T extends RpcComponentRegistry<ServerComponents>
 >(
   registry: T,
+  styles: { native: any; web: string } | undefined,
   request: Request,
   next: (
     request: Request
@@ -70,6 +92,7 @@ export async function jsxrpcMiddleware<
   T extends RpcComponentRegistry<ServerComponents>
 >(
   registry: T,
+  styles: { native: any; web: string } | undefined,
   request: Request,
   next?: (
     request: Request
@@ -88,7 +111,7 @@ export async function jsxrpcMiddleware<
     const platform = url.searchParams.get("platform") ?? "web";
     return newWorkersRpcResponse(
       request,
-      new ComponentDispatcher(registry, platform)
+      new ComponentDispatcher(registry, platform, styles)
     );
   }
 

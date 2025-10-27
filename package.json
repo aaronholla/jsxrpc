@@ -2,46 +2,13 @@
   "name": "jsxrpc",
   "version": "0.0.0",
   "description": "A library for creating RPC components in TypeScript.",
-  "type": "module",
+  "private": true,
   "license": "MIT",
-  "files": [
-    "dist"
-  ],
-  "main": "./dist/index.js",
-  "module": "./dist/index.js",
-  "types": "./dist/index.d.ts",
-  "exports": {
-    "./client": "./dist/client.js",
-    "./server": "./dist/server.js",
-    "./package.json": "./package.json"
-  },
-  "scripts": {
-    "build": "tsdown",
-    "dev": "tsdown --watch",
-    "test": "vitest",
-    "typecheck": "tsc --noEmit"
-  },
   "workspaces": [
-    ".",
-    "demos/*"
+    "packages/*"
   ],
-  "devDependencies": {
-    "@cloudflare/workers-types": "^4.20251011.0",
-    "@types/node": "^24.7.2",
-    "@types/react": "^19.2.2",
-    "bumpp": "^10.3.1",
-    "react": "^19.1.1",
-    "tsdown": "^0.15.6",
-    "typescript": "^5.9.3",
-    "vitest": "^3.2.4"
-  },
-  "dependencies": {
-    "capnweb": "^0.1.0"
-  },
-  "peerDependencies": {
-    "react": "^19.1.1"
-  },
   "patchedDependencies": {
-    "capnweb@0.1.0": "patches/capnweb@0.1.0.patch"
+    "capnweb@0.1.0": "patches/capnweb@0.1.0.patch",
+    "react-native-css@3.0.1": "patches/react-native-css@3.0.1.patch"
   }
 }

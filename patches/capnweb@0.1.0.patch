@@ -1,4 +1,10 @@
-diff --git a/node_modules/capnweb/dist/index-workers.d.ts b/dist/index-workers.d.ts
+diff --git a/Users/aaron/Projects/jsxrpc/node_modules/capnweb/.bun-tag-8c28ae582a71adf6 b/.bun-tag-8c28ae582a71adf6
+new file mode 100644
+index 0000000000000000000000000000000000000000..e69de29bb2d1d6434b8b29ae775ad8c2e48c5391
+diff --git a/Users/aaron/Projects/jsxrpc/node_modules/capnweb/.bun-tag-ed677005963e8ebe b/.bun-tag-ed677005963e8ebe
+new file mode 100644
+index 0000000000000000000000000000000000000000..e69de29bb2d1d6434b8b29ae775ad8c2e48c5391
+diff --git a/Users/aaron/Projects/jsxrpc/node_modules/capnweb/dist/index-workers.d.ts b/dist/index-workers.d.ts
 new file mode 100644
 index 0000000000000000000000000000000000000000..3e5e8add4faab6147ec58f062ac2daecd142cf4b
 --- /dev/null
@@ -6,7 +12,7 @@ index 0000000000000000000000000000000000000000..3e5e8add4faab6147ec58f062ac2daec
 @@ -0,0 +1,2 @@
 +export { RpcPromise, RpcSession, RpcSessionOptions, RpcStub, RpcTarget, RpcTransport, deserialize, newHttpBatchRpcResponse, newHttpBatchRpcSession, newMessagePortRpcSession, newWebSocketRpcSession, newWorkersRpcResponse, newWorkersWebSocketRpcResponse, nodeHttpBatchRpcResponse, serialize } from './index.js';
 +import 'node:http';
-diff --git a/node_modules/capnweb/dist/index-workers.js b/dist/index-workers.js
+diff --git a/Users/aaron/Projects/jsxrpc/node_modules/capnweb/dist/index-workers.js b/dist/index-workers.js
 new file mode 100644
 index 0000000000000000000000000000000000000000..3f04a190ccfda3b980d1451ac86fb720291f325d
 --- /dev/null
@@ -2596,7 +2602,7 @@ index 0000000000000000000000000000000000000000..3f04a190ccfda3b980d1451ac86fb720
 +//# sourceMappingURL=index-workers.js.map
 +//# sourceMappingURL=index-workers.js.map
 \ No newline at end of file
-diff --git a/node_modules/capnweb/dist/index-workers.js.map b/dist/index-workers.js.map
+diff --git a/Users/aaron/Projects/jsxrpc/node_modules/capnweb/dist/index-workers.js.map b/dist/index-workers.js.map
 new file mode 100644
 index 0000000000000000000000000000000000000000..0c69e739f3caebef2dc11c574549721cf8132050
 --- /dev/null

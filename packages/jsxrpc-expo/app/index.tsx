@@ -1,10 +1,14 @@
 import { Suspense } from "react";
 import { StatusBar } from "expo-status-bar";
-import { StyleSheet, Text, View } from "react-native";
+import { StyleSheet } from "react-native";
 import { useRpcComponents } from "jsxrpc/client";
+import primitives, { View, Text } from "@/components/primitives";
 
 export default function App() {
-  const { ServerComponent } = useRpcComponents("http://localhost:5173");
+  const { ServerComponent } = useRpcComponents(
+    primitives,
+    "http://localhost:5173"
+  );
 
   return (
     <View style={styles.container}>

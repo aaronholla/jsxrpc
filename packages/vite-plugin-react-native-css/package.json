@@ -1,0 +1,37 @@
+{
+  "name": "vite-plugin-react-native-css",
+  "version": "0.0.0",
+  "description": "A vite plugin to compile native css files",
+  "type": "module",
+  "license": "MIT",
+  "files": [
+    "dist",
+    "types.d.ts"
+  ],
+  "main": "./dist/index.js",
+  "types": "./dist/index.d.ts",
+  "exports": {
+    ".": "./dist/index.js",
+    "./package.json": "./package.json",
+    "./types": {
+      "types": "./types.d.ts"
+    }
+  },
+  "scripts": {
+    "build": "tsdown --external ../pkg",
+    "dev": "tsdown --external ../pkg --watch",
+    "test": "vitest",
+    "typecheck": "tsc --noEmit"
+  },
+  "dependencies": {
+    "react-native-css": "^3.0.1"
+  },
+  "devDependencies": {
+    "@rollup/pluginutils": "^5.3.0",
+    "lightningcss": "1.30.1",
+    "vite": "^7.1.2"
+  },
+  "peerDependencies": {
+    "lightningcss": "1.30.1"
+  }
+}

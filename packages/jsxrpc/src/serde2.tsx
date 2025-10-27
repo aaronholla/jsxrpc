@@ -1,4 +1,5 @@
 import React, { Suspense } from "react";
+import type { AnyComponent } from "./client";
 
 type Marker<T extends string, Rest extends object = {}> = { $jsxrpc: T } & Rest;
 
@@ -126,7 +127,8 @@ export function deserializeNode(
     string,
     | OpaqueSerializedElementShape
     | ((element: OpaqueSerializedElementShape) => void)
-  >
+  >,
+  clientComponentMap: Record<string, AnyComponent>
 ): any {
   if (element && typeof element === "object") {
     if ("$jsxrpc" in element && element["$jsxrpc"] === "promise") {
@@ -134,13 +136,21 @@ export function deserializeNode(
         if (asyncComponentResolvers.has(element.id)) {
           const existing = asyncComponentResolvers.get(element.id);
           if (typeof existing !== "function") {
-            resolve(deserializeNode(existing, asyncComponentResolvers));
+            resolve(
+              deserializeNode(
+                existing,
+                asyncComponentResolvers,
+                clientComponentMap
+              )
+            );
           } else {
             throw new Error(`Async component ${element.id} already set`);
           }
         }
         asyncComponentResolvers.set(element.id, (elem) => {
-          resolve(deserializeNode(elem, asyncComponentResolvers));
+          resolve(
+            deserializeNode(elem, asyncComponentResolvers, clientComponentMap)
+          );
         });
       });
       return <AsyncWrapper childrenPromise={promise} />;
@@ -152,17 +162,52 @@ export function deserializeNode(
 
       const children = deserializeNode(
         element.props?.children as OpaqueSerializedElementShape,
-        asyncComponentResolvers
+        asyncComponentResolvers,
+        clientComponentMap
       );
       return React.createElement(Suspense, {
         fallback: element.fallback
           ? deserializeNode(
               element.fallback as OpaqueSerializedElementShape,
-              asyncComponentResolvers
+              asyncComponentResolvers,
+              clientComponentMap
             )
           : undefined,
         children,
       });
+    }
+
+    if (
+      clientComponentMap &&
+      "type" in element &&
+      element.type in clientComponentMap &&
+      "props" in element
+    ) {
+      const { children, ...rest } = element.props as {
+        children?:
+          | OpaqueSerializedElementShape[]
+          | OpaqueSerializedElementShape;
+        props?: Record<string, unknown>;
+      };
+
+      const childrenArray =
+        children === undefined || Array.isArray(children)
+          ? children ?? []
+          : [children];
+
+      const props = {};
+      for (const key of Object.keys(rest)) {
+        // @ts-ignore
+        props[key] = deserializeNode(rest[key]);
+      }
+
+      return React.createElement(
+        clientComponentMap[element.type],
+        props,
+        ...childrenArray.map((item) =>
+          deserializeNode(item, asyncComponentResolvers, clientComponentMap)
+        )
+      );
     }
 
     if ("type" in element && "props" in element) {
@@ -188,7 +233,7 @@ export function deserializeNode(
         element.type,
         props,
         ...childrenArray.map((item) =>
-          deserializeNode(item, asyncComponentResolvers)
+          deserializeNode(item, asyncComponentResolvers, clientComponentMap)
         )
       );
     }

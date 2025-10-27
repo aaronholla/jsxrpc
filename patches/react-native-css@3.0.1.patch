@@ -1,0 +1,32 @@
+diff --git a/dist/module/compiler/compiler.js b/dist/module/compiler/compiler.js
+index 6928de925c1810526d1b2fdd0326cc121d355b49..97ea15556b08314f0fcfe80237b6a7c4103f9fea 100644
+--- a/dist/module/compiler/compiler.js
++++ b/dist/module/compiler/compiler.js
+@@ -2,13 +2,13 @@
+ 
+ /* eslint-disable */
+ import { inspect } from "node:util";
+-import { debug } from "debug";
++import debug from "debug";
++import { transform as lightningcss, Features } from 'lightningcss';
+ import { maybeMutateReactNativeOptions, parsePropAtRule } from "./atRules.js";
+ import { parseContainerCondition } from "./container-query.js";
+ import { parseDeclaration, round } from "./declarations.js";
+ import { inlineVariables } from "./inline-variables.js";
+ import { extractKeyFrames } from "./keyframes.js";
+-import { lightningcssLoader } from "./lightningcss-loader.js";
+ import { parseMediaQuery } from "./media-query.js";
+ import { StylesheetBuilder } from "./stylesheet.js";
+ import { supportsConditionValid } from "./supports.js";
+@@ -37,10 +37,7 @@ export function compile(code, options = {}) {
+     }
+   }
+   const builder = new StylesheetBuilder(options);
+-  const {
+-    lightningcss,
+-    Features
+-  } = lightningcssLoader();
++  
+   logger(`Lightningcss first pass`);
+ 
+   /**
